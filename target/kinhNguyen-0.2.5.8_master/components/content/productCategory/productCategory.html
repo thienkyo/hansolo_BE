@@ -1,0 +1,190 @@
+<script>
+ 	/*------------------
+        Background Set
+    --------------------*/
+    $('.set-bg').each(function () {
+        var bg = $(this).data('setbg');
+        $(this).css('background-image', 'url(' + bg + ')');
+    });
+
+	/*--------------------------
+        Select
+    ----------------------------*/
+    $("select").niceSelect();
+
+	 /*------------------
+		Navigation
+	--------------------*/
+    $(".mobile-menu").slicknav({
+        prependTo: '#mobile-menu-wrap',
+        allowParentLinks: true
+    });
+
+    //Canvas Menu
+    $(".canvas__open").on('click', function () {
+        $(".offcanvas-menu-wrapper").addClass("active");
+        $(".offcanvas-menu-overlay").addClass("active");
+    });
+
+    $(".offcanvas-menu-overlay").on('click', function () {
+        $(".offcanvas-menu-wrapper").removeClass("active");
+        $(".offcanvas-menu-overlay").removeClass("active");
+    });
+
+    /*-------------------
+		Scroll
+	--------------------- */
+    $(".nice-scroll").niceScroll({
+        cursorcolor: "#0d0d0d",
+        cursorwidth: "5px",
+        background: "#e5e5e5",
+        cursorborder: "",
+        autohidemode: true,
+        horizrailenabled: false
+    });
+</script>
+<link rel="stylesheet" href="css/nice-select.css" type="text/css">
+<!-- Breadcrumb Section Begin -->
+<section class="breadcrumb-option">
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="breadcrumb__text">
+					<h4>Shop</h4>
+					<div class="breadcrumb__links">
+						<a href="/#/">Home</a>
+						<a href="#/productCategory/0">Shop</a>
+						<span>{{ctrl.categoryName}}</span>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- Breadcrumb Section End -->
+<!-- Shop Section Begin -->
+<section class="shop spad" >
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-3">
+				<div class="shop__sidebar">
+					<div class="shop__sidebar__search">
+						<form action="#">
+							<input type="text" placeholder="Search...">
+							<button type="submit"><span class="icon_search"></span></button>
+						</form>
+					</div>
+					<div class="shop__sidebar__accordion">
+						<div class="accordion" id="accordionExample">
+							<div class="card">
+								<div class="card-heading">
+									<a data-toggle="collapse" data-target="#collapseOne">Categories</a>
+								</div>
+								<div id="collapseOne" class="collapse show" data-parent="#accordionExample">
+									<div class="card-body">
+										<div class="shop__sidebar__categories">
+											<ul class="nice-scroll">
+												<li ng-repeat="cate in ctrl.cateList | filter:{ type: 'CATEGORY' }"><a href="#/productCategory/{{cate.id}}">{{cate.name}}</a></li>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="card">
+								<div class="card-heading">
+									<a data-toggle="collapse" data-target="#collapseTwo">Branding</a>
+								</div>
+								<div id="collapseTwo" class="collapse show" data-parent="#accordionExample">
+									<div class="card-body">
+										<div class="shop__sidebar__brand">
+											<ul>
+												<li ng-repeat="cate in ctrl.cateList | filter:{ type: 'BRANDING' }"><a href="#/productCategory/{{cate.id}}">{{cate.name}}</a></li>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="card">
+								<div class="card-heading">
+									<a data-toggle="collapse" data-target="#collapseThree">Collections</a>
+								</div>
+								<div id="collapseThree" class="collapse show" data-parent="#accordionExample">
+									<div class="card-body">
+										<div class="shop__sidebar__brand">
+											<ul>
+												<li ng-repeat="cate in ctrl.cateList | filter:{ type: 'COLLECTION' }"><a href="#/productCategory/{{cate.id}}">{{cate.name}}</a></li>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="card">
+								<div class="card-heading">
+									<a data-toggle="collapse" data-target="#collapseSix">Tags</a>
+								</div>
+								<div id="collapseSix" class="collapse show" data-parent="#accordionExample">
+									<div class="card-body">
+										<div class="shop__sidebar__tags">
+											<a href="#/productCategory/{{cate.id}}" ng-repeat="cate in ctrl.cateList | filter:{ type: 'TAG' }">{{cate.name}}</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-9">
+				<div class="shop__product__option">
+					<div class="row">
+						<div class="col-lg-6 col-md-6 col-sm-6">
+							<div class="shop__product__option__left">
+								<p ng-show="ctrl.currentPage.totalElements == 0">0 results</p>
+								<p ng-show="ctrl.currentPage.totalElements != 0">Showing {{ctrl.pagination.currentFirstItemIndex}}–{{ctrl.pagination.currentLastItemIndex}} of {{ctrl.pagination.totalElements}} results</p>
+							</div>
+						</div>
+						<div class="col-lg-6 col-md-6 col-sm-6">
+							<div class="shop__product__option__right">
+								<p>Sort by Price:</p>
+								<select>
+									<option value="">Low To High</option>
+									<option value="">$0 - $55</option>
+									<option value="">$55 - $100</option>
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-4 col-md-6 col-sm-6" ng-repeat="product in ctrl.currentPage.content">
+						<div class="product__item {{product.discount == 0 ? '' : 'sale'}}" >
+							<a href="#/productDetail/{{product.id}}" target="_blank">
+							<div class="product__item__pic set-bg" data-setbg="img/product/{{product.thumbnail}}">
+								<span class="label" ng-show="product.discount != 0">Sale {{product.discount}}%</span>
+								<span class="label" ng-show="ctrl.alertProdId == product.id && product.quantity != 0" style="color: #ffffff;background: #e53637e0;margin-top: 25px;">put to cart</span>
+							</div>
+							</a>
+							<div class="product__item__text">
+								<h6>{{product.name}}</h6>
+								<a href="" class="add-cart" ng-click="ctrl.addToCart(product)">+ Add To Cart</a>
+								<h5>{{product.sellPrice*(100 - product.discount)/100 | number:0}}đ</h5>
+								<h5 ng-show="product.discount != 0"><s style="color: #0d0d0d6e;">{{product.sellPrice | number:0}}đ</s></h5>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="product__pagination">
+							<a ng-click="ctrl.getTargetPage(ctrl.pagination.previousNumber)">&laquo;</a>
+							<a href="" ng-repeat="item in ctrl.pagination.list" class="{{item.status ? 'active' : ''}}" ng-click="ctrl.getTargetPage(item.number)">{{item.number}}</a>
+							<a ng-click="ctrl.getTargetPage(ctrl.pagination.nextNumber)">&raquo;</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- Shop Section End -->

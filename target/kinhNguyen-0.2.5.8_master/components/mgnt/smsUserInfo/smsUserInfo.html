@@ -1,0 +1,935 @@
+<style>
+
+.thumb {
+    width: 100px;
+    height: 100px;
+    float: none;
+    position: relative;
+    top: 7px;
+}
+
+form .progress {
+    line-height: 15px;
+}
+}
+
+.progress {
+    display: inline-block;
+    width: 100px;
+    border: 3px groove #CCC;
+}
+
+.progress div {
+    font-size: smaller;
+    background: orange;
+    width: 0;
+}
+
+.bt {
+  background: #FE980F;
+  border: medium none;
+  border-radius: 0;
+  margin-left: -5px;
+  margin-top: -3px;
+  padding: 7px 17px;
+}
+
+.inactive {
+	color: #ccc;
+	pointer-events: none;
+	cursor: default;
+	padding: 8px 4px;
+	text-align: center;
+	letter-spacing: 2px;
+	background-color: darkgray;
+
+}
+.btn-default {
+	color: #333;
+    background-color: #fff;
+    border-color: #ccc;
+}
+</style>
+<link href="css/main2.css" rel="stylesheet">
+<section>
+	<div class="container" ng-cloak>
+
+		<h3 style="margin-bottom: 40px;text-align: center;">SMS management</h3>
+
+		<!-- Nav tabs -->
+		<ul class="nav nav-tabs" role="tablist">
+			<li class="nav-item">
+				<a class="nav-link" data-toggle="tab" href="" data-target="#job" ng-click="ctrl.loadSmsJobData()">Sms job</a>
+			</li>
+			<li class="nav-item ">
+				<a class="nav-link active" data-toggle="tab" href="" data-target="#queue" ng-click="ctrl.loadSmsQueueData()" >Sms queue</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" data-toggle="tab" href="" data-target="#info">Sms user info</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" data-toggle="tab" href="" data-target="#specificInfo" ng-click="ctrl.loadSpecificSmsUserInfo()">Specific Sms user info</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" data-toggle="tab" href="" data-target="#strategy" ng-click="ctrl.getStrategyByTerm()">Strategy</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" data-toggle="tab" href="" data-target="#luckyDraw" >lucky draw</a>
+			</li>
+		</ul>
+
+		<!-- Tab panes -->
+		<div class="tab-content">
+			<!-- config job tab pane-->
+			<div id="job" class="container tab-pane"><br>
+				<div class="row" >
+					<div class="col-sm-1">
+						<input type="number"  ng-model="ctrl.theSmsJob.id" disabled="disabled" placeholder="id" style="width:50px;"/>
+					</div>
+					<div class="col-sm-2">
+						<input type="text"  ng-model="ctrl.theSmsJob.jobName" placeholder="jobName" style="width: 100%;"/>
+					</div>
+					<div class="col-sm-1">
+						<input type="text"  ng-model="ctrl.theSmsJob.weight" placeholder="weight" style="width: 100%;"/>
+					</div>
+
+					<div class="col-sm-2">
+							<div class='input-group date'>
+								<input ng-model="ctrl.theSmsJob.startDate" class="form-control" onkeydown="return false" datepicker-popup="dd/MM/yyyy"
+									   show-weeks="false" is-open="ctrl.DPisOpen" ng-focus="ctrl.DPisOpen=true" style="height:30px;border: 1px solid rgb(118 118 118);border-radius: 3px;"
+									   ng-click="ctrl.openDP()" min-date="ctrl.MinDate" placeholder="order from date"/>
+								<span class="input-group-addon" ng-click="ctrl.openDP()">
+									<span class="glyphicon glyphicon-calendar"></span>
+								</span>
+							</div>
+					</div>
+					<div class="col-sm-2">
+
+						<select  ng-model="ctrl.theSmsJob.shopCode"
+								 ng-options="opt.shopCode as opt.shopAddress +' | '+ opt.shopName for opt in ctrl.shopList | filter:{ shopCode: '!ALL'}"
+								 style="width: 100%;height: 30px;border: 1px solid rgb(118 118 118);border-radius: 3px;background: #FFFFFF;float: right;">
+						</select>
+						<!--{{ctrl.theSmsJob.gmtCreate | date:"yyyy-MM-dd HH:mm:ss"}}-->
+					</div>
+
+				</div>
+				<div class="row" style="margin-top: 20px;">
+					<div class="col-sm-1" style="margin-top: 5px;">
+						Active:
+						<input type="checkbox"  ng-model="ctrl.theSmsJob.status" />
+					</div>
+					<div class="col-sm-1" style="margin-top: 5px;">
+						isTest:
+						<input type="checkbox"  ng-model="ctrl.theSmsJob.isTest" />
+					</div>
+					<div class="col-sm-1">
+						<select  ng-model="ctrl.theSmsJob.jobType"
+								 ng-options="opt.value as opt.name for opt in ctrl.jobTypeList"
+								 style="width: 100%;height: 30px;">
+						</select>
+					</div>
+					<div class="col-sm-1">
+						<input type="text"  ng-model="ctrl.theSmsJob.noSmsDays" placeholder="noSmsDays" style="width: 100%;"/>
+					</div>
+					<div class="col-sm-1">
+						<input type="text"  ng-model="ctrl.theSmsJob.intervalTime" placeholder="intervalTime" style="width: 100%;"/>
+					</div>
+					<div class="col-sm-6">
+						sms: {{ctrl.lastHeartBeatTime | date:"yyyy-MM-dd HH:mm:ss"}}
+						| data: {{ctrl.lastPrepareDataTime | date:"yyyy-MM-dd HH:mm:ss"}}
+					</div>
+
+				</div>
+				<div class="row" style="margin-top: 20px;">
+					<div class="col-sm-4">
+						<textarea name="content" placeholder="specificPhones" rows="5"  style="white-space: pre-line;"
+								  ng-model="ctrl.theSmsJob.specificPhones" maxlength="160" ng-cloak ></textarea>
+					</div>
+					<div class="col-sm-4">
+						<textarea name="content" placeholder="content" rows="5"  style="white-space: pre-line;"
+								  ng-model="ctrl.theSmsJob.msgContentTemplate" maxlength="153" ng-cloak ></textarea>
+						<div id="the-count2">
+							<span>{{ctrl.theSmsJob.msgContentTemplate.length}}</span>
+							<span>/153</span>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<textarea name="attList" placeholder="attribute list" rows="5"  style="white-space: pre-line;"
+								  ng-model="ctrl.theSmsJob.attList"  ng-cloak ></textarea>
+						<div id="the-count4">
+							<span>{code = fn:random|6, name = att:name}</span>
+						</div>
+					</div>
+				</div>
+				<div class="row" style="margin-top: 20px;">
+					<div class="col-sm-5"></div>
+					<div class="col-sm-2">
+						<a ng-click="ctrl.upsertSmsJob(ctrl.theSmsJob)" href=""
+						   ng-class="ctrl.isSaveButtonPressed ? 'inactive' : 'btn btn-default check_out'"
+						   style="margin: 0px 0px 0px 0px;">{{ctrl.isSaveButtonPressed ? 'Loading' : 'Save'}}</a>
+
+						<a ng-click="ctrl.clearSmsJob()" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;">clear</a>
+					</div>
+					<div class="col-sm-1">
+						<div class="alert alert-danger" role="alert" ng-show="ctrl.responseStrFail"
+							 style="margin: 0px 0px 0px 0px;width: 120px;height: 0px;padding: 5px 0px 25px 10px;">
+							<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+							<span class="sr-only"></span>
+							thất bại
+						</div>
+
+						<alert type="success" close="ctrl.closeAlert()" ng-if="ctrl.responseStr"
+							   dismiss-on-timeout="2000" style="margin: 0px 0px 0px 0px;width: 120px;height: 0px;padding: 5px 0px 25px 10px;" >
+							thành công
+						</alert>
+					</div>
+				</div>
+
+				<!-- sms job list-->
+				<!--<h3 style="margin-top: 20px;">Sms job </h3>-->
+				<a ng-click="ctrl.toggleSmsSend()" href=""
+				   ng-class="ctrl.isRunSmsSend ? 'btn btn-success' : 'btn btn-danger'"
+				   ng-disabled="ctrl.isSaveButtonPressed"
+				   style="margin: 4px 0px 4px 0px;float: left;">{{ctrl.isRunSmsSend ? '[ON]' : '[OFF]'}} send sms api</a>
+				<a ng-click="ctrl.toggleSmsDataPrepare()" href=""
+				   ng-class="ctrl.isRunSmsDataPrepare ? 'btn btn-success' : 'btn btn-danger'"
+				   ng-disabled="ctrl.isSaveButtonPressed"
+				   style="margin: 4px 4px 4px 4px;float: left;">{{ctrl.isRunSmsDataPrepare ? '[ON]' : '[OFF]'}} sms data api/task</a>
+
+
+
+
+
+				<select  ng-model="ctrl.queryRequest.shopCode"
+						 ng-options="opt.shopCode as opt.shopAddress +' | '+ opt.shopName for opt in ctrl.shopList | filter:{ shopCode: '!ALL'}"
+						 ng-change="ctrl.loadSmsJobData()"
+						 style="width: 15%;height: 35px;border: 1px solid rgb(118 118 118);border-radius: 3px;background: #FFFFFF;float: right;">
+				</select>
+
+
+
+
+				<!-- sms job table-->
+				<div class="table-responsive">
+					<table ng-table="ctrl.smsJobTableParams" class="table table-bordered table-hover table-striped" show-filter="true">
+						<tr ng-repeat="one in $data">
+							<td title="'id'" filter="{ 'id': 'number'}"  style="width:70px;text-align: center;">
+								<a href="" ng-click="ctrl.setTheSmsJob(one)">{{one.id}}</a>
+							</td>
+
+							<td title="'name'" filter="{ 'jobName' : 'text'}" sortable="'jobName'" style="text-align: right;">
+								{{one.jobName}}
+							</td>
+							<td title="'message'" filter="{ 'msgContentTemplate' : 'text'}" sortable="'msgContentTemplate'" style="text-align: left;">
+								{{one.msgContentTemplate}}
+							</td>
+							<td title="'noDay'"  style="text-align: left;width:80px;">
+								{{one.noSmsDays}}
+							</td>
+							<td title="'interval'"  style="text-align: left;width:80px;">
+								{{one.intervalTime}}
+							</td>
+							<td title="'active'"  style="text-align: center;">
+								<select  ng-model="one.status"  ng-change="ctrl.upsertSmsJob(one)"
+										 ng-options="opt.value as opt.name for opt in ctrl.statusList"
+										 ng-disabled="ctrl.isSaveButtonPressed"
+										 ng-style="ctrl.setStyle(one.status)">
+								</select>
+							</td>
+							<td title="'isTest'"  style="width:80px;text-align: center;" ng-style="ctrl.setStyle(one.isTest)">
+								{{one.isTest}}
+							</td>
+							<td title="'type'" filter="{ 'jobType' : 'text'}" style="width:100px;text-align: center;">
+								{{one.jobType}}
+							</td>
+							<td title="'start'"  style="text-align: left;width: 110px;">
+								{{one.startDate | date:"yyyy-MM-dd"}}
+							</td>
+
+							<td title="'delete'" style="width:fit-content;" ng-if="ctrl.isSuperAdmin">
+								<a ng-click="ctrl.promptDelete(one.id)" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;" >delete</a>
+								<p ng-show="ctrl.deletingId == one.id">
+									Are you sure?
+									<a ng-click="ctrl.deleteSmsJob(one)" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">yes</a>
+									<a ng-click="ctrl.resetDelete()" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">no</a>
+								</p>
+							</td>
+
+						</tr>
+					</table>
+				</div>
+
+			</div>
+			<!-- sms queue tab pane-->
+			<div id="queue" class="container tab-pane active"><br>
+				<!-- sms queue insert/update-->
+				<div class="row" >
+					<div class="col-sm-1">
+						<input type="number"  ng-model="ctrl.theSmsQueue.id" disabled="disabled" placeholder="id" style="width:50px;"/>
+					</div>
+
+					<div class="col-sm-2">
+						<input type="text"  ng-model="ctrl.theSmsQueue.receiverName" placeholder="name" style="width: 100%;"/>
+					</div>
+
+					<div class="col-sm-1" style="margin-top: 5px;">
+						male:
+						<input type="checkbox"  ng-model="ctrl.theSmsQueue.gender" />
+					</div>
+					<div class="col-sm-1">
+						<input type="text"  ng-model="ctrl.theSmsQueue.status" placeholder="status" style="width: 100%;"/>
+					</div>
+					<div class="col-sm-1">
+						<input type="text"  ng-model="ctrl.theSmsQueue.weight"  placeholder="weight" style="width: 100%;"/>
+					</div>
+					<div class="col-sm-2">
+						<select  ng-model="ctrl.theSmsQueue.shopCode"
+								 ng-options="opt.shopCode as opt.shopAddress +' | '+ opt.shopName for opt in ctrl.shopList | filter:{ shopCode: '!ALL'}"
+								 style="width: 100%;height: 30px;border: 1px solid rgb(118 118 118);border-radius: 3px;background: #FFFFFF;">
+						</select>
+					</div>
+					<div class="col-sm-3">
+						<input type="text"  ng-model="ctrl.theSmsQueue.receiverPhone" placeholder="phone" style="width: 120px;"/>
+						{{ctrl.theSmsQueue.receiverPhone | tel}}
+					</div>
+
+
+
+
+				</div>
+				<div class="row" style="margin-top: 20px;">
+					<div class="col-sm-7">
+						<textarea name="content" placeholder="content" rows="5"  style="white-space: pre-line;"
+						  ng-model="ctrl.theSmsQueue.content" maxlength="153" ng-cloak ></textarea>
+						<div id="the-count">
+							<span>{{ctrl.theSmsQueue.content.length}}</span>
+							<span>/ 153</span>
+							|create:{{ctrl.theSmsQueue.gmtCreate | date:"yyyy-MM-dd HH:mm:ss"}}
+							|modify:{{ctrl.theSmsQueue.gmtModify| date:"yyyy-MM-dd HH:mm:ss"}}
+						</div>
+					</div>
+
+					<div class="col-sm-2">
+						<a ng-click="ctrl.upsertSmsQueue(ctrl.theSmsQueue)" href=""
+						   ng-class="ctrl.isSaveButtonPressed ? 'inactive' : 'btn btn-default check_out'"
+						   style="margin: 0px 0px 0px 0px;">{{ctrl.isSaveButtonPressed ? 'Loading' : 'Save'}}</a>
+
+						<a ng-click="ctrl.clearSmsQueue()" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;">clear</a>
+					</div>
+					<div class="col-sm-1">
+						<div class="alert alert-danger" role="alert" ng-show="ctrl.responseStrFail"
+							 style="margin: 0px 0px 0px 0px;width: 120px;height: 0px;padding: 5px 0px 25px 10px;">
+							<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+							<span class="sr-only"></span>
+							thất bại
+						</div>
+
+						<alert type="success" close="ctrl.closeAlert()" ng-if="ctrl.responseStr"
+							   dismiss-on-timeout="2000" style="margin: 0px 0px 0px 0px;width: 120px;height: 0px;padding: 5px 0px 25px 10px;" >
+							thành công
+						</alert>
+					</div>
+				</div>
+
+				<!-- sms queue table-->
+				<h3 style="margin-top: 20px;">Sms queue </h3>
+				<div class="row" style="margin-top: 20px;margin-bottom: 10px;">
+					<div class="col-sm-1">
+						<select  ng-model="ctrl.queryRequest.amount"
+								 ng-options="opt.value as opt.name for opt in ctrl.smsQueueAmountList"
+								 ng-change="ctrl.loadSmsQueueData()"
+								 style="width: 90px;height: 35px;">
+						</select>
+					</div>
+					<div class="col-sm-7">
+						<a ng-click="ctrl.prepareData()" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;" >prepare</a>
+						<a ng-click="ctrl.promptDelete100()" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;" >delete 100</a>
+						<span ng-show="ctrl.isDelete100">
+							Are you sure?
+							<a ng-click="ctrl.delete100SmsQueue()" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">yes</a>
+							<a ng-click="ctrl.resetDelete100()" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">no</a>
+						</span>
+
+					</div>
+					<div class="col-sm-4">
+						<select  ng-model="ctrl.queryRequest.shopCode"
+								 ng-options="opt.shopCode as opt.shopAddress +' | '+ opt.shopName for opt in ctrl.shopList | filter:{ shopCode: '!ALL'}"
+								 ng-change="ctrl.loadSmsQueueData()"
+								 style="width: 45%;height: 35px;border: 1px solid rgb(118 118 118);border-radius: 3px;background: #FFFFFF;float: right;">
+						</select>
+					</div>
+
+
+
+
+				</div>
+				<!-- sms queue table-->
+				<div class="table-responsive">
+					<table ng-table="ctrl.smsQueueTableParams" class="table table-bordered table-hover table-striped" show-filter="true">
+						<tr ng-repeat="one in $data">
+							<td title="'id'" filter="{ 'id': 'number'}" sortable="'id'" style="width:60px;text-align: center;">
+								<a href="" ng-click="ctrl.setTheSmsQueue(one)">{{one.id}}</a>
+							</td>
+							<td title="'phone'" filter="{ 'receiverPhone' : 'text'}" sortable="'receiverPhone'" style="text-align: left;width:160px;">
+								{{one.receiverPhone | tel}}
+							</td>
+							<td title="'name|weight'" filter="{ 'receiverName' : 'text'}" sortable="'receiverName'" style="text-align: right;width:150px;">
+								{{one.receiverName}} |{{one.weight}}
+							</td>
+							<td title="'content'" filter="{ 'content' : 'text'}" sortable="'content'" style="text-align: left;">
+								{{one.content}}
+							</td>
+							<td title="'job'" filter="{ 'jobId' : 'text'}"  style="text-align: center;">
+								{{one.jobName +" |" + one.jobId}}
+							</td>
+							<td title="'create'" filter="{ 'gmtCreate' : 'text'}" sortable="'gmtCreate'" style="text-align: left;width:130px;">
+								{{one.gmtCreate | date:"yyyy-MM-dd HH:mm:ss"}}
+							</td>
+
+							<td title="'sta'" filter="{ 'status' : 'text'}"  style="width:80px;text-align: center;">
+								{{one.status}}
+							</td>
+
+							<td title="'X'" style="width:fit-content;" ng-if="ctrl.isSuperAdmin">
+								<a ng-click="ctrl.promptDelete(one.id)" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;" >X</a>
+								<p ng-show="ctrl.deletingId == one.id">
+									Are you sure?
+									<a ng-click="ctrl.deleteSmsQueue(one)" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">yes</a>
+									<a ng-click="ctrl.resetDelete()" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">no</a>
+								</p>
+							</td>
+
+						</tr>
+					</table>
+				</div>
+			</div>
+			<!-- sms user info tab pane -->
+			<div id="info" class="container tab-pane"><br>
+				<div class="row" >
+					<div class="col-sm-1">
+						<input type="number"  ng-model="ctrl.theSmsUserInfo.id" disabled="disabled" placeholder="id" style="width:50px;"/>
+					</div>
+					<div class="col-sm-3">
+						<input type="text"  ng-model="ctrl.theSmsUserInfo.phone" placeholder="phone" style="width: 100px;"/>
+						{{ctrl.theSmsUserInfo.phone | tel}}
+					</div>
+					<div class="col-sm-2">
+						<input type="text"  ng-model="ctrl.theSmsUserInfo.name" placeholder="name" style="width: 100%;"/>
+					</div>
+					<div class="col-sm-1">
+						<input type="text"  ng-model="ctrl.theSmsUserInfo.jobIdList" placeholder="jobIdList" style="width: 100%;"/>
+					</div>
+					<div class="col-sm-3">
+						<input type="text"  ng-model="ctrl.theSmsUserInfo.address" placeholder="address" style="width: 100%;"/>
+					</div>
+
+					<div class="col-sm-1">
+						tester:
+						<input type="checkbox"  ng-model="ctrl.theSmsUserInfo.isTestUser" />
+					</div>
+
+				</div>
+
+				<div class="row" style="margin-top: 20px;">
+					<div class="col-sm-2">
+						<select  ng-model="ctrl.theSmsUserInfo.areaCode"
+								 ng-options="opt.value as opt.name for opt in ctrl.AreaCodeList"
+								 style="width: 100%;height: 30px;border: 1px solid rgb(118 118 118);border-radius: 3px;background: #FFFFFF;">
+						</select>
+					</div>
+					<div class="col-sm-2">
+						<select  ng-model="ctrl.theSmsUserInfo.gender"
+								 ng-options="opt.value as opt.name for opt in ctrl.genderArray"
+								 style="width: 100%;height: 30px;border: 1px solid rgb(118 118 118);border-radius: 3px;background: #FFFFFF;">
+						</select>
+					</div>
+
+					<div class="col-sm-2">
+						<select  ng-model="ctrl.theSmsUserInfo.shopCode"
+								 ng-options="opt.shopCode as opt.shopAddress +' | '+ opt.shopName for opt in ctrl.shopList | filter:{ shopCode: '!ALL'}"
+								 style="width: 100%;height: 30px;border: 1px solid rgb(118 118 118);border-radius: 3px;background: #FFFFFF;"
+								 ng-change="ctrl.loadSmsUserInfoData()">
+						</select>
+					</div>
+
+					<div class="col-sm-2" style="margin-top: 10px;">{{ctrl.theSmsUserInfo.gmtCreate | date:"yyyy-MM-dd HH:mm:ss"}}</div>
+					<div class="col-sm-2" style="margin-top: 10px;">{{ctrl.theSmsUserInfo.gmtModify | date:"yyyy-MM-dd HH:mm:ss"}}</div>
+				</div>
+
+				<div class="row" style="margin-top: 20px;">
+					<div class="col-sm-2">
+						<a ng-click="ctrl.upsert(ctrl.theSmsUserInfo)" href=""
+						   ng-class="ctrl.isSaveButtonPressed ? 'inactive' : 'btn btn-default check_out'"
+						   style="margin: 0px 0px 0px 0px;">{{ctrl.isSaveButtonPressed ? 'Loading' : 'Save'}}</a>
+
+						<a ng-click="ctrl.clear()" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;">clear</a>
+					</div>
+					<div class="col-sm-4">
+
+						<div class="alert alert-danger" role="alert" ng-show="ctrl.responseStrFail"
+							 style="margin: 0px 0px 0px 0px;width: 120px;height: 0px;padding: 5px 0px 25px 10px;">
+							<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+							<span class="sr-only"></span>
+							thất bại
+						</div>
+
+						<alert type="success" close="ctrl.closeAlert()" ng-if="ctrl.responseStr"
+							   dismiss-on-timeout="2000" style="margin: 0px 0px 0px 0px;width: 120px;height: 0px;padding: 5px 0px 25px 10px;" >
+							thành công
+						</alert>
+
+					</div>
+					<div class="col-sm-6"></div>
+				</div>
+
+				<!-- sms user info table-->
+				<h3 style="margin-top: 20px;">Sms User Info List </h3>
+				<div class="row" style="margin-top: 20px;margin-bottom: 10px;">
+					<div class="col-sm-2">
+						<select  ng-model="ctrl.queryRequest.amount"
+								 ng-options="opt.value as opt.name for opt in ctrl.smsUserInfoAmountList"
+								 ng-change="ctrl.loadSmsUserInfoData()"
+								 style="width: 70px;height: 35px;">
+						</select>
+						size: {{ctrl.smsUserInfoList.length}}
+					</div>
+					<div class="col-sm-7"></div>
+					<div class="col-sm-3">
+						<select  ng-model="ctrl.queryRequest.shopCode"
+								 ng-options="opt.shopCode as opt.shopAddress +' | '+ opt.shopName for opt in ctrl.shopList | filter:{ shopCode: '!ALL'}"
+								 ng-change="ctrl.loadSmsUserInfoData()"
+								 style="width: 55%;height: 35px;border: 1px solid rgb(118 118 118);border-radius: 3px;background: #FFFFFF;float: right;">
+						</select>
+					</div>
+
+
+				</div>
+				<!-- sms user info table-->
+				<div class="table-responsive">
+					<table ng-table="ctrl.tableParams" class="table table-bordered table-hover table-striped" show-filter="true">
+						<tr ng-repeat="one in $data">
+							<td title="'id'" filter="{ 'id': 'number'}" sortable="'id'" style="width:60px;text-align: center;">
+								<a href="" ng-click="ctrl.setTheOne(one)">{{one.id}}</a>
+							</td>
+							<td title="'phone'" filter="{ 'phone' : 'text'}" sortable="'phone'" style="text-align: left;width:130px;">
+								{{one.phone | tel}}
+							</td>
+							<td title="'name'" filter="{ 'name' : 'text'}" sortable="'name'" style="text-align: right;">
+								{{one.name}}
+							</td>
+							<td title="'address'" filter="{ 'address' : 'text'}" sortable="'address'" style="text-align: right;">
+								{{one.address}}
+							</td>
+							<td title="'jobId'" filter="{ 'jobIdList' : 'text'}" sortable="'jobIdList'" style="text-align: right;">
+								{{one.jobIdList}}
+							</td>
+							<td title="'area'" filter="{ 'areaCode' : 'text'}" sortable="'areaCode'" style="text-align: right;">
+								{{one.areaCode}}
+							</td>
+							<td title="'M/F'" filter="{ 'gender' : 'text'}"  style="text-align: right;">
+								{{one.gender == true ? 'male' : 'female' }}
+							</td>
+							<td title="'tester'" filter="{ 'isTestUser' : 'text'}"  style="text-align: center;width: 10px;">
+								<input type="checkbox"  ng-model="one.isTestUser"/>
+							</td>
+							<td title="'order date'" filter="{ 'orderCreateDate' : 'text'}" sortable="'orderCreateDate'" style="text-align: left;width:130px;">
+								{{one.orderCreateDate | date:"yyyy-MM-dd HH:mm:ss"}}
+							</td>
+
+							<td title="'last send'" filter="{ 'lastSendSmsDate' : 'text'}" sortable="'lastSendSmsDate'" style="width:110px;">
+								{{one.lastSendSmsDate | date:"yyyy-MM-dd HH:mm:ss"}}
+							</td>
+
+							<td title="'delete'" style="width:fit-content;" ng-if="ctrl.isSuperAdmin">
+								<a ng-click="ctrl.promptDelete(one.id)" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;" >delete</a>
+								<p ng-show="ctrl.deletingId == one.id">
+									Are you sure?
+									<a ng-click="ctrl.deleteSmsUserInfo(one)" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">yes</a>
+									<a ng-click="ctrl.resetDelete()" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">no</a>
+								</p>
+							</td>
+
+						</tr>
+					</table>
+				</div>
+
+
+			</div>
+			<!-- specific sms user info tab pane -->
+			<div id="specificInfo" class="container tab-pane"><br>
+				<div class="row" >
+					<div class="col-sm-1">
+						<input type="number"  ng-model="ctrl.theSpecificSmsUserInfo.id" disabled="disabled" placeholder="id" style="width:50px;"/>
+					</div>
+					<div class="col-sm-3">
+						<input type="text"  ng-model="ctrl.theSpecificSmsUserInfo.phone" placeholder="phone" style="width: 100px;"/>
+						{{ctrl.theSpecificSmsUserInfo.phone | tel}}
+					</div>
+					<div class="col-sm-2">
+						<input type="text"  ng-model="ctrl.theSpecificSmsUserInfo.name" placeholder="name" style="width: 100%;"/>
+					</div>
+					<div class="col-sm-4">
+						<input type="text"  ng-model="ctrl.theSpecificSmsUserInfo.address" placeholder="address" style="width: 100%;"/>
+					</div>
+
+					<div class="col-sm-1">
+						tester:
+						<input type="checkbox"  ng-model="ctrl.theSpecificSmsUserInfo.isTestUser" />
+					</div>
+
+				</div>
+
+				<div class="row" style="margin-top: 20px;">
+					<div class="col-sm-2">
+						<input type="text"  ng-model="ctrl.theSpecificSmsUserInfo.jobIdList" placeholder="old Job" style="width: 100%;"/>
+					</div>
+					<div class="col-sm-1">
+						<input type="text"  ng-model="ctrl.theSpecificSmsUserInfo.jobIdToRun" placeholder="job to run" style="width: 100%;"/>
+					</div>
+					<div class="col-sm-2" style="margin-top: 5px;">{{ctrl.theSpecificSmsUserInfo.gmtCreate | date:"yyyy-MM-dd HH:mm:ss"}}</div>
+					<div class="col-sm-2" style="margin-top: 5px;">{{ctrl.theSpecificSmsUserInfo.gmtModify | date:"yyyy-MM-dd HH:mm:ss"}}</div>
+					<div class="col-sm-2">
+						<a ng-click="ctrl.upsertSpecificSmsUserInfo(ctrl.theSpecificSmsUserInfo)" href=""
+						   ng-class="ctrl.isSaveButtonPressed ? 'inactive' : 'btn btn-default check_out'"
+						   style="margin: 0px 0px 0px 0px;">{{ctrl.isSaveButtonPressed ? 'Loading' : 'Save'}}</a>
+
+						<a ng-click="ctrl.clearTheSpecificSmsUserInfo()" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;">clear</a>
+					</div>
+					<div class="col-sm-2">
+
+						<div class="alert alert-danger" role="alert" ng-show="ctrl.responseStrFail"
+							 style="margin: 0px 0px 0px 0px;width: 120px;height: 0px;padding: 5px 0px 25px 10px;">
+							<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+							<span class="sr-only"></span>
+							thất bại
+						</div>
+
+						<alert type="success" close="ctrl.closeAlert()" ng-if="ctrl.responseStr"
+							   dismiss-on-timeout="2000" style="margin: 0px 0px 0px 0px;width: 120px;height: 0px;padding: 5px 0px 25px 10px;" >
+							thành công
+						</alert>
+
+					</div>
+
+
+				</div>
+
+
+				<!-- specific sms user info table-->
+				<h3 style="margin-top: 20px;">Specific Sms User Info List </h3>
+				<div class="row" style="margin-top: 20px;margin-bottom: 20px;">
+					<div class="col-sm-2">
+						<select  ng-model="ctrl.amount"
+								 ng-options="opt.value as opt.name for opt in ctrl.amountList"
+								 ng-change="ctrl.loadSmsUserInfoData()"
+								 style="width: 70px;height: 30px;">
+						</select>
+						size: {{ctrl.specificSmsUserInfoList.length}}
+					</div>
+				</div>
+				<!-- specific sms user info table-->
+				<div class="table-responsive">
+					<table ng-table="ctrl.specificSmsUserInfoTableParams" class="table table-bordered table-hover table-striped" show-filter="true">
+						<tr ng-repeat="one in $data">
+							<td title="'id'" filter="{ 'id': 'number'}" sortable="'id'" style="width:60px;text-align: center;">
+								<a href="" ng-click="ctrl.setTheSpecificSmsUserInfo(one)">{{one.id}}</a>
+							</td>
+							<td title="'phone'" filter="{ 'phone' : 'text'}" sortable="'phone'" style="text-align: left;width:130px;">
+								{{one.phone | tel}}
+							</td>
+							<td title="'name'" filter="{ 'name' : 'text'}" sortable="'name'" style="text-align: right;">
+								{{one.name}}
+							</td>
+							<td title="'address'" filter="{ 'address' : 'text'}" sortable="'address'" style="text-align: right;">
+								{{one.address}}
+							</td>
+							<td title="'oldJob'" filter="{ 'jobIdList' : 'text'}" sortable="'jobIdList'" style="text-align: right;width:100px;">
+								{{one.jobIdList}}
+							</td>
+							<td title="'runId'" filter="{ 'jobIdToRun' : 'text'}" sortable="'jobIdToRun'" style="text-align: right;width:100px;">
+								{{one.jobIdToRun}}
+							</td>
+							<td title="'tester'" filter="{ 'isTestUser' : 'text'}"  style="text-align: center;">
+								<input type="checkbox"  ng-model="one.isTestUser"/>
+							</td>
+							<td title="'order date'" filter="{ 'orderCreateDate' : 'text'}" sortable="'orderCreateDate'" style="text-align: left;width:130px;">
+								{{one.orderCreateDate | date:"yyyy-MM-dd HH:mm:ss"}}
+							</td>
+
+							<td title="'last send'" filter="{ 'lastSendSmsDate' : 'text'}" sortable="'lastSendSmsDate'" style="width:110px;">
+								{{one.lastSendSmsDate | date:"yyyy-MM-dd HH:mm:ss"}}
+							</td>
+
+							<td title="'delete'" style="width:fit-content;" ng-if="ctrl.isSuperAdmin">
+								<a ng-click="ctrl.promptDelete(one.id)" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;" >delete</a>
+								<p ng-show="ctrl.deletingId == one.id">
+									Are you sure?
+									<a ng-click="ctrl.deleteSpecificSmsUserInfo(one)" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">yes</a>
+									<a ng-click="ctrl.resetDelete()" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">no</a>
+								</p>
+							</td>
+
+						</tr>
+					</table>
+				</div>
+
+			</div>
+			<!-- strategy tab pane-->
+			<div id="strategy" class="container tab-pane"><br>
+				<div class="row" >
+					<div class="col-sm-1">
+						<input type="number"  ng-model="ctrl.theStrategy.id" disabled="disabled" placeholder="id" style="width:50px;"/>
+					</div>
+					<div class="col-sm-2">
+						<input type="text"  ng-model="ctrl.theStrategy.name" placeholder="name" style="width: 100%;"/>
+					</div>
+					<div class="col-sm-2">
+						<input type="text"  ng-model="ctrl.theStrategy.discountValue" placeholder="discount Value" style="width: 100%;"/>
+					</div>
+					<div class="col-sm-2">
+						<select  ng-model="ctrl.theStrategy.gender"
+								 ng-options="opt.value as opt.name for opt in ctrl.genderArrayStrategy">
+						</select>
+					</div>
+					<div class="col-sm-2">
+						<select  ng-model="ctrl.theStrategy.location"
+								 ng-options="opt.value as opt.name for opt in ctrl.locationArrayStrategy">
+						</select>
+					</div>
+
+					<div class="col-sm-2">
+						<div class='input-group date'>
+							<input ng-model="ctrl.theStrategy.startDate" class="form-control" onkeydown="return false" datepicker-popup="dd/MM/yyyy"
+								   show-weeks="false" is-open="ctrl.DPisOpenStrategy" ng-focus="ctrl.DPisOpenStrategy=true" style="height:30px;"
+								   ng-click="ctrl.openDPStrategy()" min-date="ctrl.MinDate" placeholder="start date"/>
+							<span class="input-group-addon" ng-click="ctrl.openDP()">
+									<span class="glyphicon glyphicon-calendar"></span>
+								</span>
+						</div>
+					</div>
+
+				</div>
+				<div class="row" style="margin-top: 20px;">
+					<div class="col-sm-1" style="margin-top: 5px;padding-right: 0px;">
+						Coupon:
+						<input type="checkbox"  ng-model="ctrl.theStrategy.isCouponCreated" />
+					</div>
+					<div class="col-sm-1" style="margin-top: 5px;">
+						SMS:
+						<input type="checkbox"  ng-model="ctrl.theStrategy.isSmsCreated" />
+					</div>
+					<div class="col-sm-6">
+						create: {{ctrl.theStrategy.gmtCreate | date:"yyyy-MM-dd HH:mm:ss"}}
+						| modify: {{ctrl.theStrategy.gmtModify | date:"yyyy-MM-dd HH:mm:ss"}}
+					</div>
+
+				</div>
+				<div class="row" style="margin-top: 20px;">
+					<div class="col-sm-5">
+						<textarea name="content" placeholder="content" rows="5"  style="white-space: pre-line;"
+								  ng-model="ctrl.theStrategy.templateContent" maxlength="160" ng-cloak ></textarea>
+						<div id="the-count3">
+							<span>{{ctrl.theStrategy.templateContent.length}}</span>
+							<span>/160</span>
+						</div>
+					</div>
+					<div class="col-sm-2">
+						<a ng-click="ctrl.upsertStrategy(ctrl.theStrategy)" href=""
+						   ng-class="ctrl.isSaveButtonPressed ? 'inactive' : 'btn btn-default check_out'"
+						   style="margin: 0px 0px 0px 0px;">{{ctrl.isSaveButtonPressed ? 'Loading' : 'Save'}}</a>
+
+						<a ng-click="ctrl.clearSmsJob()" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;">clear</a>
+					</div>
+					<div class="col-sm-1">
+						<div class="alert alert-danger" role="alert" ng-show="ctrl.responseStrFail"
+							 style="margin: 0px 0px 0px 0px;width: 120px;height: 0px;padding: 5px 0px 25px 10px;">
+							<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+							<span class="sr-only"></span>
+							thất bại
+						</div>
+
+						<alert type="success" close="ctrl.closeAlert()" ng-if="ctrl.responseStr"
+							   dismiss-on-timeout="2000" style="margin: 0px 0px 0px 0px;width: 120px;height: 0px;padding: 5px 0px 25px 10px;" >
+							thành công
+						</alert>
+					</div>
+				</div>
+
+				<h3 style="margin-top: 20px;">Strategy </h3>
+				<!-- strategy table-->
+				<div class="table-responsive">
+					<table ng-table="ctrl.strategyTableParams" class="table table-bordered table-hover table-striped" show-filter="true">
+						<tr ng-repeat="one in $data">
+							<td title="'id'" filter="{ 'id': 'number'}"  style="text-align: center;">
+								<a href="" ng-click="ctrl.setTheStrategy(one)">{{one.id}}</a>
+							</td>
+							<td title="'name'" filter="{ 'jobName' : 'text'}" sortable="'jobName'" style="text-align: right;width:90px;">
+								{{one.name}}
+							</td>
+							<td title="'message'" filter="{ 'msgContentTemplate' : 'text'}" sortable="'msgContentTemplate'" style="text-align: left;">
+								{{one.templateContent}}
+							</td>
+							<td title="'discount'"  style="text-align: left;width:80px;">
+								{{one.discountValue}}
+							</td>
+							<td title="'gender'"  style="text-align: left;width:80px;">
+								{{one.gender}}
+							</td>
+							<td title="'coupon'"  style="width:60px;text-align: center;" ng-style="ctrl.setStyle(one.isCouponCreated)">
+								{{one.isCouponCreated}}
+							</td>
+							<td title="'sms'"  style="width:60px;text-align: center;" ng-style="ctrl.setStyle(one.isSmsCreated)">
+								{{one.isSmsCreated}}
+							</td>
+							<td title="'location'"  style="text-align: left;width:70px;">
+								{{one.location}}
+							</td>
+
+							<td title="'start'"  style="text-align: left;width: 6px;">
+								{{one.startDate | date:"yyyy-MM-dd"}}
+							</td>
+
+							<td title="'delete'" style="width:fit-content;" ng-if="ctrl.isSuperAdmin">
+								<a ng-click="ctrl.promptDelete(one.id)" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;" >delete</a>
+								<p ng-show="ctrl.deletingId == one.id">
+									Are you sure?
+									<a ng-click="ctrl.deleteStrategy(one)" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">yes</a>
+									<a ng-click="ctrl.resetDelete()" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">no</a>
+								</p>
+							</td>
+						</tr>
+					</table>
+				</div>
+
+			</div>
+			<!-- luckyDraw tab pane-->
+			<div id="luckyDraw" class="container tab-pane "><br>
+				<!--  insert/update-->
+				<div class="row" style="margin-top: 20px;">
+					<div class="col-sm-4">
+						<textarea name="content" placeholder="order id list" rows="3"  style="white-space: pre-line;"
+								  ng-model="ctrl.luckyDrawReq.orderIdList" maxlength="500" ng-cloak ></textarea>
+					</div>
+					<div class="col-sm-2">
+						<input type="text"  ng-model="ctrl.luckyDrawReq.expiry" placeholder="expiry" style="width: 100%;"/>
+						<select  ng-model="ctrl.luckyDrawReq.smsJobId"
+								 ng-options="opt.id as opt.jobName for opt in ctrl.smsJobList | filter:{ jobType: 'LUCKYDRAW', status: true}"
+								 style="width: 100%;height: 30px;margin-top: 20px;border: 1px solid rgb(118 118 118);border-radius: 4px;background: #FFFFFF;color: black;">
+						</select>
+					</div>
+					<div class="col-sm-2">
+						<input type="text"  ng-model="ctrl.luckyDrawReq.clientCode" placeholder="client code" style="width: 100%;"/>
+						<input type="text"  ng-model="ctrl.luckyDrawReq.shopCode" placeholder="shop code" style="width: 100%;margin-top: 20px;"/>
+					</div>
+
+					<div class="col-sm-2">
+						<input type="text"  ng-model="ctrl.luckyDrawReq.couponValue" placeholder="coupon value" style="width: 100%;"/>
+
+					</div>
+
+					<div class="col-sm-2">
+						<a ng-click="ctrl.saveProgramResult(ctrl.luckyDrawReq)" href=""
+						   ng-class="ctrl.isSaveButtonPressed ? 'inactive' : 'btn btn-default check_out'"
+						   style="margin: 0px 0px 0px 0px;">{{ctrl.isSaveButtonPressed ? 'Loading' : 'create'}}</a>
+
+						<a ng-click="ctrl.clearSmsQueue()" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;">clear</a>
+
+
+						<alert type="danger" close="ctrl.closeAlert()" ng-if="ctrl.responseStrFail"
+							   dismiss-on-timeout="3000"
+							   style="margin: 20px 0px 0px 0px;width: 100%;height: 0px;padding: 0px 0px 25px 10px;" >
+							{{ctrl.responseStrFail}}
+						</alert>
+
+						<alert type="success" close="ctrl.closeAlert()" ng-if="ctrl.responseStr"
+							   dismiss-on-timeout="3000"
+							   style="margin: 20px 0px 0px 0px;width: 100%;height: 0px;padding: 0px 0px 23px 10px;" >
+							   {{ctrl.responseStr}}
+						</alert>
+
+					</div>
+				</div>
+
+				<!-- lucky draw table-->
+				<!--<h3 style="margin-top: 20px;">Sms queue </h3>-->
+				<div class="row" style="margin-top: 20px;margin-bottom: 20px;">
+					<div class="col-sm-2">
+						<select  ng-model="ctrl.queryRequest.amount"
+								 ng-options="opt.value as opt.name for opt in ctrl.amountList"
+								 ng-change="ctrl.getProgramResultForMgnt()"
+								 style="width: 90px;height: 30px;">
+						</select>
+						size:{{ctrl.programResultList.length}}
+					</div>
+					<div class="col-sm-7">
+						<a ng-click="ctrl.prepareCouponAndSms(ctrl.luckyDrawReq)" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;" >prepare</a>
+						<a ng-click="ctrl.getProgramResultForMgnt()" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;" >reset</a>
+						<a ng-click="ctrl.promptDelete100()" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;" >delete 100</a>
+						<span ng-show="ctrl.isDelete100">
+							Are you sure?
+							<a ng-click="" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">yes</a>
+							<a ng-click="ctrl.resetDelete100()" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">no</a>
+						</span>
+
+					</div>
+				</div>
+				<!-- program result table-->
+				<div class="table-responsive">
+					<table ng-table="ctrl.programResultTableParams" class="table table-bordered table-hover table-striped" show-filter="true">
+						<tr ng-repeat="one in $data track by $index">
+							<!--<td title="'id'" filter="{ 'id': 'number'}" sortable="'id'" style="width:60px;text-align: center;">
+								<a href="" ng-click="ctrl.setTheSmsQueue(one)">{{one.id}}</a>
+							</td>-->
+							<td title="'order'" style="width:50px;text-align: center;">
+								<a href="" ng-click="">{{one.orderId}}</a>
+							</td>
+
+							<td title="'code'" filter="{ 'code' : 'text'}"  style="text-align: left;width:60px;">
+								{{one.code}}
+							</td>
+
+							<td title="'val'"  style="text-align: left;">
+								{{one.couponValue}}
+							</td>
+
+							<td title="'winner'" filter="{ 'winnerNamePhone' : 'text' }" sortable="'winnerPhone'" style="text-align: left;width:100px;">
+								{{one.winnerNamePhone}}
+							</td>
+							<!--<td title="'name'" filter="{ 'winnerName' : 'text'}" sortable="'winnerName'" style="text-align: right;width:110px;">
+								{{one.winnerName}}
+							</td>-->
+							<td title="'content|job name'" filter="{ 'smsContent' : 'text'}" sortable="'smsContent'" style="text-align: left;">
+								{{one.smsContent}} | {{one.jobName}}
+							</td>
+
+							<td title="'exp'"  style="text-align: left;">
+								{{one.expiry}}
+							</td>
+
+							<td title="'create'" filter="{ 'gmtCreate' : 'text'}" sortable="'gmtCreate'" style="text-align: left;width:110px;">
+								{{one.gmtCreate | date:"yyyy-MM-dd HH:mm:ss"}}
+							</td>
+
+							<td title="'stat'" filter="{ 'status' : 'text'}"  style="width:70px;text-align: center;"
+								ng-style="ctrl.setStyle(one.status)">
+								{{one.status ? 'DONE' : 'INIT'}}
+							</td>
+
+							<td title="'X'" style="width:fit-content;" ng-if="ctrl.isSuperAdmin">
+								<a ng-click="ctrl.promptDelete(one.id)" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;" >X</a>
+								<p ng-show="ctrl.deletingId == one.id">
+									Are you sure?
+									<a ng-click="ctrl.deleteProgramResult(one)" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">yes</a>
+									<a ng-click="ctrl.resetDelete()" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">no</a>
+								</p>
+							</td>
+
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+		<!-- end Tab panes -->
+
+	</div>
+</section>

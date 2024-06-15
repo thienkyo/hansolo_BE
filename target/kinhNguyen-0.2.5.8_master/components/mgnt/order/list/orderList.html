@@ -1,0 +1,634 @@
+
+<!--<link rel="stylesheet" href="css/bootstrap.3.3.6/dist/css/bootstrap.3.3.6.css" type="text/css">-->
+<style>
+.preth  th {
+	  border: 1px solid black;
+	  border-collapse: collapse;
+	  padding-top: 10px;
+	  padding-bottom: 10px;
+	  text-align: center;
+	}
+
+.preth  td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 5px 10px 5px 15px;
+}
+</style>
+<section>
+	<div class="container" ng-cloak>
+		<h3 style="margin-bottom: 40px;text-align: center;">Order management {{ctrl.isLocalWeb ? '[LOCAL]' : ''}}</h3>
+		<!-- exampleModal from col 'id' -->
+		<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title" id="exampleModalLabel">order summary</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close" >
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="container" style="width:100%;font-size: 18px;">
+							<div class="row">
+								<div class="col-sm-2 border">id</div>
+								<div class="col-sm-4 border">Name</div>
+								<div class="col-sm-3 border">Lens</div>
+								<div class="col-sm-3 border">Detail</div>
+							</div>
+							<div class="row" ng-repeat="item in ctrl.detailArray ">
+								<div class="col-sm-2 border" style="padding: 10px 0px 0px 15px">
+									<a href="#/mgnt/storeOrder/{{item.orderId}}" target="_blank" >{{item.orderId}}</a>
+								</div>
+								<div class="col-sm-4 border" style="padding: 10px 0px 0px 15px">{{item.name}}</div>
+								<div class="col-sm-3 border" >
+									<div class="row" style="margin-left: 3px;margin-top: 5px">{{item.reading ? item.odReading : item.odSphere}} {{item.odCylinder}}</div>
+									<div class="row" style="margin-left: 3px;">{{item.reading ? item.osReading : item.osSphere}} {{item.osCylinder}}</div>
+								</div>
+								<div class="col-sm-3 border" style="padding: 10px 0px 0px 15px">{{item.lensNote}} {{item.monoLens ? ', 1cái' : ''}} {{item.reading ? ', đọc sách' : ''}}</div>
+							</div>
+
+						</div>
+						<textarea id="js-copytextarea" rows="3" ng-model="ctrl.copyText" style="margin-top: 15px;white-space: pre-wrap;"></textarea>
+
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-info" ng-click="ctrl.copyClipBoard()">copy</button>
+						<button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="ctrl.clearAmount()">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!--summary Modal from col 'name'-->
+		<div class="modal fade" id="summaryModal" tabindex="-1" role="dialog" aria-labelledby="summaryModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-xl" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title" id="summaryModalLabel">Order [<a href="#/mgnt/storeOrder/{{ctrl.theSummaryModal.id}}" target="_blank" >{{ctrl.theSummaryModal.id}}</a>] status:{{ctrl.theSummaryModal.statusName}} </h4>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close" >
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="cart__total" style="margin-bottom: 20px;padding: 20px 20px 5px 20px;font-weight: bolder;">
+							<div class="row" style="margin-bottom: 20px;font-size: 16px;font-weight: bolder;">
+								<div class="col-sm-3">Name: {{ctrl.theSummaryModal.shippingName}}</div>
+								<div class="col-sm-3">Phone: {{ctrl.theSummaryModal.shippingPhone | tel}}</div>
+								<div class="col-sm-6">Address: {{ctrl.theSummaryModal.shippingAddress}}</div>
+							</div>
+							<div class="row" style="margin-bottom: 20px;font-size: 16px;font-weight: bolder;">
+								<div class="col-sm-2">Tổng: {{ctrl.theSummaryModal.subTotal | number:0}}đ</div>
+								<div class="col-sm-3">Giảm: ({{ctrl.theSummaryModal.couponDiscount}}%) {{ctrl.theSummaryModal.couponAmount | number:0}}đ</div>
+								<div class="col-sm-3">Thành tiền: {{ctrl.theSummaryModal.total | number:0}}đ</div>
+								<div class="col-sm-2">Cọc: {{ctrl.theSummaryModal.deposit | number:0}}đ</div>
+								<div class="col-sm-2">Còn lại: {{ctrl.theSummaryModal.deposit > 1000 ?  ctrl.theSummaryModal.subTotal*((100 - ctrl.theSummaryModal.couponDiscount)/100) - ctrl.theSummaryModal.customDiscountAmount - ctrl.theSummaryModal.deposit : '0' | number:0}}đ</div>
+							</div>
+						</div>
+
+						<table ng-table="" class="table table-bordered table-hover table-striped" show-filter="false">
+
+							<tr ng-repeat="item in ctrl.theSummaryModal.orderDetails">
+								<td title="'id'"  style="width:50px;text-align: center;">
+									{{item.id}}
+								</td>
+								<td title="'name'"filter="{ 'name': 'text'}" style="text-align: left;width:180px;">
+									{{item.name}} ({{item.yob}})
+								</td>
+								<td title="'lens'" style="text-align: right;padding-right: 2px;padding-left: 2px;">
+									<div class="row" style="margin-left: 3px;">
+										({{ item.odSphere +' '+ item.odCylinder +' '+item.odPrism}})
+										({{ item.osSphere +' '+ item.osCylinder +' '+item.osPrism}})
+									</div>
+									<div class="row" style="margin-left: 3px;">
+										{{item.lensNote}} {{item.monoLens ? ', 1cái' : ''}} {{item.reading ? ', đọc sách' : ''}}
+                                    </div>
+
+									<div class="row" style="margin-left: 3px;" ng-if="item.lensDiscountAmount > 0">
+										{{item.lensDiscountAmount > 0 ? '(discount:'+item.lensDiscountAmount +'%)' : ''}}
+									</div>
+
+								</td>
+								<td title="'frame'"  style="width:200px;">
+									{{item.frameNote}} {{item.frameDiscountAmount > 0 ? '(discount:'+item.frameDiscountAmount +'%)' : ''}}
+								</td>
+								<td title="'note'" style="width:200px;">
+									{{item.orderDetailNoteForCus}}
+									{{item.orderDetailNote}}
+								</td>
+
+							</tr>
+
+						</table>
+
+
+						<!--<div class="container" style="width:100%;font-size: 18px;">
+							<div class="row" style="background-color: beige;font-weight: bolder;">
+								<div class="col-sm-1 border" >id</div>
+								<div class="col-sm-2 border">Name</div>
+								<div class="col-sm-2 border">Lens</div>
+								<div class="col-sm-2 border">Detail</div>
+								<div class="col-sm-2 border">Frame</div>
+								<div class="col-sm-2 border">Note</div>
+								<div class="col-sm-1 border">Other</div>
+							</div>
+							<div class="row" ng-repeat="item in ctrl.theSummaryModal.orderDetails ">
+								<div class="col-sm-1 border" style="padding: 10px 0px 0px 5px">{{item.id}}</div>
+								<div class="col-sm-2 border" style="padding: 10px 0px 0px 5px">{{item.name}}({{item.yob}})</div>
+								<div class="col-sm-2 border" style="padding: 10px 0px 0px 5px">
+									<div class="row" style="margin-left: 3px;margin-top: 5px">
+										({{ item.odSphere +' '+ item.odCylinder}} {{item.reading ? '('+item.odReading +' '+item.odCylinder+')' :  ''}} {{item.odPrism}})
+										({{ item.osSphere +' '+ item.osCylinder}} {{item.reading ? '('+item.osReading +' '+item.osCylinder+')' :  ''}} {{item.osPrism}})
+									</div>
+
+									<div class="row" style="margin-left: 3px;" ng-if="item.lensDiscountAmount > 0">(discount:{{item.lensDiscountAmount}}%)</div>
+								</div>
+								<div class="col-sm-2 border" style="padding: 10px 0px 0px 15px">
+									{{item.lensNote}} {{item.monoLens ? ', 1cái' : ''}} {{item.reading ? ', đọc sách' : ''}}
+								</div>
+								<div class="col-sm-2 border" style="padding: 10px 0px 0px 15px">{{item.frameNote}} {{item.frameDiscountAmount > 0 ? '(discount:'+item.frameDiscountAmount +'%)' : ''}}</div>
+								<div class="col-sm-2 border">
+									{{item.orderDetailNoteForCus}}
+									{{item.orderDetailNote}}
+								</div>
+								<div class="col-sm-1 border">
+									{{item.otherNote}}
+								</div>
+							</div>
+						</div>-->
+					</div>
+
+					<!-- metadata-->
+					<ul class="nav nav-tabs" role="tablist" ng-show="ctrl.isSuperAdmin">
+						<li class="nav-item {{ctrl.isClickMetadata ? 'active' : ''}}" ng-click="ctrl.isClickMetadata = ctrl.isClickMetadata ? false : true;">
+							<a class="nav-link" data-toggle="tab" href="" data-target="#metadata">metadata</a>
+						</li>
+					</ul>
+					<div class="tab-content">
+						<div id="metadata" class="container tab-pane {{ctrl.isClickMetadata ? 'active' : ''}}">
+							<br/>
+							<pre>{{ctrl.theSummaryModal.plainText}}</pre>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="ctrl.clearAmount()">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- one day Modal -->
+		<div class="modal fade" id="oneDayModal" tabindex="-1" role="dialog" aria-labelledby="oneDayModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-xl" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title" id="oneDayModalLabel">One Day Report: {{ctrl.OneDayReport.date}}</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close" >
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="cart__total" style="margin-bottom: 20px;padding: 20px 20px 20px 20px;font-weight: bolder;">
+							<div class="row" style="margin-right: 0px;margin-left: 0px;">
+								<div class="col-sm-3 border">Tổng : {{ctrl.OneDayReport.subTotalAmount | number:0}}đ</div>
+								<div class="col-sm-3 border">tiền thực nhận: {{ctrl.OneDayReport.actualAmount | number:0}}đ</div>
+								<div class="col-sm-2 border">cọc: {{ctrl.OneDayReport.depositAmount | number:0}}đ</div>
+								<div class="col-sm-3 border">Tổng còn lại: {{ctrl.OneDayReport.remainAmount | number:0}}đ</div>
+								<div class="col-sm-1 border">{{ctrl.OneDayReport.frameNumber}}G+{{ctrl.OneDayReport.lensNumber}}T</div>
+							</div>
+						</div>
+
+						<table class="preth" style="width: 100%;border-collapse: collapse;margin-top: 10px;">
+							<thead>
+							<tr>
+								<th>id</th>
+								<th style="width: 200px;">name</th>
+								<th>tổng</th>
+								<th style="width: 160px;">Giảm</th>
+								<th>Thành tiền</th>
+								<th>cọc</th>
+								<th>Còn lại</th>
+								<th>Detail</th>
+								<th>Status</th>
+							</tr>
+							</thead>
+							<tbody>
+							<tr ng-repeat="item in ctrl.OneDayReport.data ">
+								<td><a href="#/mgnt/storeOrder/{{item.id}}" target="_blank" >{{item.id}}</a></td>
+								<td>{{item.shippingName}}</td>
+								<td style="text-align: right;">{{item.subTotal | number:0}}đ</td>
+								<td style="text-align: right;">({{item.couponDiscount}}%) {{item.couponAmount | number:0}}đ</td>
+								<td style="text-align: right;">{{item.total | number:0}}đ</td>
+								<td style="text-align: right;">{{item.deposit | number:0}}đ</td>
+								<td style="text-align: right;">{{item.deposit ==0 ? '0' : item.remain | number:0}}đ</td>
+								<td>{{item.frameNumber}}G+{{item.lensNumber}}T</td>
+								<td>{{item.statusName}}</td>
+							</tr>
+							</tbody>
+						</table>
+
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="ctrl.clearAmount()">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!--history Modal from col 'phone'-->
+		<div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-labelledby="historyModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-xl" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title" id="historyModalLabel">
+							Phone [{{ctrl.theHistoryModal[0].phone | tel}}]
+							<div class="loaderAni" style="float: inline-end;margin-top: 7px;" ng-if="ctrl.isLoadingHistoryModal"></div>
+						</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close" >
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="table-responsive" style="padding-left: 15px;padding-right: 15px;">
+							<table ng-table="ctrl.theHistoryParams" class="table table-bordered table-hover table-striped" show-filter="true">
+
+								<tr ng-repeat="item in $data">
+									<td title="'order'"  style="width:50px;text-align: center;">
+										<a href="#/mgnt/storeOrder/{{item.orderId}}" target="_blank" >{{item.orderId}}</a>
+									</td>
+									<td title="'date'" sortable="'gmtCreate'"  style="width:110px;">
+										{{item.gmtCreate | date:"yyyy-MM-dd  HH:mm:ss"}}
+									</td>
+									<td title="'name'"filter="{ 'name': 'text'}" style="text-align: left;width:180px;">
+										{{item.name}} ({{item.yob}})
+									</td>
+									<td title="'lens'" style="text-align: left;padding-right: 2px;padding-left: 2px;">
+										<div  style="margin-left: 3px;">
+											({{ item.odSphere +' '+ item.odCylinder +' '+item.odPrism}})
+											({{ item.osSphere +' '+ item.osCylinder +' '+item.osPrism}})
+										</div>
+										<div  style="margin-left: 3px;">
+											{{item.lensNote}} {{item.monoLens ? ', 1cái' : ''}} {{item.reading ? ', đọc sách' : ''}}
+										</div>
+										<div  style="margin-left: 3px;" ng-if="item.lensDiscountAmount > 0">
+											{{item.lensDiscountAmount > 0 ? '(discount:'+item.lensDiscountAmount +'%)' : ''}}
+										</div>
+									</td>
+									<td title="'frame'"  style="">
+										{{item.frameNote}} {{item.frameDiscountAmount > 0 ? '(discount:'+item.frameDiscountAmount +'%)' : ''}}
+									</td>
+									<td title="'note'" style="width:200px;">
+										{{item.orderDetailNoteForCus}}
+										{{item.orderDetailNote}}
+									</td>
+									<!--<td title="'shop'"  >
+										{{item.shopAddress}} |
+										{{item.shopName}}
+									</td>-->
+								</tr>
+
+							</table>
+						</div>
+					</div>
+
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="ctrl.clearAmount()">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- first 100 record -->
+		<div class="row">
+			<div class="col-sm-5">
+				<select  ng-model="ctrl.queryRequest.amount"  ng-change="ctrl.getOrdersByTerms()"
+					 ng-options="opt.value as opt.name for opt in ctrl.amountList"
+					 style="width: 20%;height: 35px;background: #F0F0E9;">
+		    	</select>
+				<input type="text"  ng-model="ctrl.queryRequest.generalPurpose" my-enter="ctrl.querySearchOrderByNamePhone()"
+					   placeholder="tên hoặc số điện thoại" style="margin-bottom: 20px;height: 35px;">
+				<button type="button" class="btn btn-primary" ng-click="ctrl.querySearchOrderByNamePhone()"
+						style="margin-top: 0px;height: 35px;vertical-align: baseline;">
+					search
+				</button>
+				<button type="button" class="btn btn-primary" ng-click="ctrl.queryRequest.generalPurpose='';ctrl.getOrdersByTerms();"
+						style="margin-top: 0px;height: 35px;vertical-align: baseline;">
+					reset
+				</button>
+			</div>
+
+
+			<div class="col-sm-7" style="text-align: end;" ng-if="!ctrl.anyPicked && !ctrl.isLuckyDrawMode">
+				<select  ng-model="ctrl.queryRequest.clientCode"
+						 ng-options="opt.clientCode as opt.brandName for opt in ctrl.clientList | filter:{ clientCode: '!GODLIKE'}"
+						 ng-change="ctrl.filterOrderAndShopByClientCode(ctrl.queryRequest.clientCode)"
+						 style="width: 15%;height: 35px;border: 1px solid rgb(118 118 118);border-radius: 4px;background: #FFFFFF;"
+						 ng-show="ctrl.isGodLike">
+				</select>
+				<select  ng-model="ctrl.queryRequest.shopCode"
+						 ng-options="opt.shopCode as opt.shopAddress +' | '+ opt.shopName for opt in ctrl.shopList "
+						 ng-disabled="ctrl.queryRequest.clientCode == 'ALL'"
+						 ng-change="ctrl.filterOrderByShopCode()"
+						 style="width: 20%;height: 35px;border: 1px solid rgb(118 118 118);border-radius: 4px;background: #FFFFFF;">
+				</select>
+				<!-- status amount -->
+				<div class="btn-group" role="group" aria-label="Basic example" style="height: 35px;vertical-align: bottom;">
+					<button type="button" class="btn btn-secondary" ng-click="ctrl.filterOrderByStatus('0')"
+							style="font-size: large;color:limegreen;background-color: white;">
+						{{ctrl.statusNumber.ordered}}</button>
+					<button type="button" class="btn btn-secondary" ng-click="ctrl.filterOrderByStatus('1')"
+							style="font-size: large;color:blue;background-color: white;">
+						{{ctrl.statusNumber.paid}}</button>
+					<button type="button" class="btn btn-secondary" ng-click="ctrl.filterOrderByStatus('2')"
+							style="font-size: large;color:darkorchid;background-color: white;">
+						{{ctrl.statusNumber.shipped}}</button>
+					<button type="button" class="btn btn-secondary" ng-click="ctrl.filterOrderByStatus('4')"
+							style="font-size: large;color:brown;background-color: white;">
+						{{ctrl.statusNumber.deposit}}</button>
+					<button type="button" class="btn btn-secondary" ng-click="ctrl.filterOrderByStatus('3')"
+							style="font-size: large;background-color: white;color: #696763;">
+						{{ctrl.statusNumber.done}}</button>
+				</div>
+			</div>
+
+			<div class="col-sm-6" ng-if="ctrl.anyPicked">
+
+					<a ng-click="ctrl.selectAllAmount()" href="" class="btn btn-default check_out"
+					   style="margin: 0px 0px 0px 0px;height: 35px;" ng-show="ctrl.tableParams.data.length < 1000" >sum all</a>
+						<!-- Button trigger modal -->
+					<button type="button" class="btn btn-primary" data-toggle="modal"
+							data-target="#exampleModal" style="margin-top: 0px;height: 35px;">
+						brief
+					</button>
+						<!-- Button trigger modal : one day report -->
+					<button type="button" class="btn btn-primary" data-toggle="modal" ng-click="ctrl.getOneDayReport()"
+							data-target="#oneDayModal" style="margin-top: 0px;height: 35px;">
+						one day
+					</button>
+					<a ng-click="ctrl.cloneOrders()" href="" class="btn btn-default check_out"
+					   style="margin: 0px 0px 0px 0px;height: 35px;" ng-disabled="ctrl.isButtonPressed" >clone {{ctrl.isButtonPressed}}</a>
+					<a ng-click="ctrl.clearAmount()" href="" class="btn btn-default check_out"
+					   style="margin: 0px 0px 0px 0px;height: 35px;" >Clear</a>
+					Total: {{ctrl.tempAmount | number:0}}đ | {{ctrl.tempFrameNumber}}G+{{ctrl.tempLensNumber}}T
+			</div>
+
+		</div>
+
+		<!--normal order list-->
+        <div class="table-responsive" ng-if="!ctrl.isLuckyDrawMode">
+            <table ng-table="ctrl.tableParams" class="table table-condensed table-bordered table-hover table-striped" show-filter="true">
+			    <tr ng-repeat="order in $data">
+			        <td title="'id'" filter="{ 'id': 'number'}"  style="width:50px;text-align: center;">
+			        	<a href="" ng-click="ctrl.setModal(order)" data-toggle="modal" data-target="#exampleModal">{{order.id}}</a>
+			        </td>
+			        <td title="'Date'" filter="{ 'gmtCreate' : 'text'}" sortable="'gmtCreate'" style="width:180px;">
+			        	<a href="" ng-click="ctrl.showOrderDetail(order)">{{order.gmtCreate | date:"yyyy-MM-dd  HH:mm:ss"}}</a>
+			        </td>
+					<td title="''"  style="text-align: center;">
+						<input type="checkbox"  ng-model="order.picked" ng-click="ctrl.calculateAmount(order)" />
+					</td>
+			        <td title="'total'" filter="{ 'total' : 'text'}" sortable="'total'" style="text-align: right;width:110px;">{{order.total | number:0 }}đ</td>
+			        <td title="'phone'" filter="{ 'shippingPhone' : 'text'}"  sortable="'shippingPhone'" style="width:135px;">
+						<a href="" ng-click="ctrl.getHistoryModal(order.shippingPhone)"
+						   data-toggle="modal" data-target="#historyModal"
+						   ng-if="order.shippingPhone.length >= 9">
+							{{order.shippingPhone | tel}}</a>
+						<a ng-if="order.shippingPhone.length < 9">{{order.shippingPhone | tel}}</a>
+					</td>
+					<td title="'name'" filter="{ 'shippingName' : 'text'}"  sortable="'shippingName'">
+						<a href="" ng-click="ctrl.setSummaryModal(order); ctrl.queryRequest.generalPurpose=order.shippingName" data-toggle="modal" data-target="#summaryModal">{{order.shippingName}}</a>
+					</td>
+					<td title="'inside'" style="width:80px;">{{order.frameNumber}}G+{{order.lensNumber}}T</td>
+					<td title="'source'" style="width:100px;">
+						<select  ng-model="order.cusSource"  ng-change="ctrl.updateCusSource(order)"
+								 ng-options="opt.id as opt.name for opt in ctrl.cusSourceList | filter:{ shopCode: order.shopCode}"
+								 ng-disabled="ctrl.isUpdatingOrder" ng-show="order.location == 'STORE'"
+								 style="background: #F0F0E9;">
+						</select>
+					</td>
+
+			        <td title="'status'"  sortable="'status'" style="width:40px;">
+						<select  ng-model="order.status"  ng-change="ctrl.updateOrderStatus(order)"
+								 ng-options="opt.value as opt.name for opt in ctrl.OrderStatusArray"
+								 ng-disabled="ctrl.isUpdatingOrder" style="background: #F0F0E9;"
+								 ng-style="ctrl.setStyle(order.status)">
+						</select>
+					</td>
+					<td title="'X'" style="width:30px;" ng-if="ctrl.isAdmin">
+						<a ng-click="ctrl.promptDelete(order.id)" href="" class="btn btn-default check_out"
+						   style="margin: 0px 0px 0px 0px;" ng-if="ctrl.isAdmin" ng-show="ctrl.deletingOrderId != order.id">X</a>
+						<p ng-show="ctrl.deletingOrderId == order.id">
+							Are you sure?
+							<a ng-click="ctrl.deleteOrder(order)" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">yes</a>
+							<a ng-click="ctrl.resetDelete()" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">no</a>
+						</p>
+
+					</td>
+			    </tr>
+			</table>
+
+        </div>
+		<div class="row" style="text-align: center;" ng-show="ctrl.showLoadingText">
+			<div class="col-sm-6"></div>
+			<div  class="loaderAni"></div>
+		</div>
+
+
+		<!--luck draw order list -->
+		<div class="table-responsive" ng-if="ctrl.isLuckyDrawMode">
+			<table ng-table="ctrl.tableParams" class="table table-condensed table-bordered table-hover table-striped" show-filter="true">
+				<tr ng-repeat="order in $data">
+					<td title="'id'" filter="{ 'id': 'number'}"  style="width:120px;text-align: center;">
+						{{order.id}}
+					</td>
+					<td title="'Date'" filter="{ 'gmtCreate' : 'text'}" sortable="'gmtCreate'" style="width:180px;">
+						<a href="" ng-click="ctrl.showOrderDetail(order)">{{order.gmtCreate | date:"yyyy-MM-dd  HH:mm:ss"}}</a>
+					</td>
+					<td title="''"  style="text-align: center;">
+						<input type="checkbox"  ng-model="order.picked" ng-click="ctrl.calculateAmount(order)" />
+					</td>
+					<td title="'phone'" filter="{ 'shippingPhone' : 'text'}"  sortable="'shippingPhone'" style="width:135px;">
+						<a href="" ng-click="ctrl.getHistoryModal(order.shippingPhone)" >{{order.shippingPhone | masking}}</a>
+					</td>
+					<td title="'name'" filter="{ 'shippingName' : 'text'}"  sortable="'shippingName'">
+						***** ***** {{order.shippingName | getShortName}}
+					</td>
+					<td title="'inside'" style="width:80px;">{{order.frameNumber}}G+{{order.lensNumber}}T</td>
+
+				</tr>
+			</table>
+		</div>
+		<!--end luck draw table-->
+
+		<!--panel tabs-->
+		<ul class="nav nav-tabs {{ctrl.isClickOrderRecovery ? 'active' : ''}}"  role="tablist">
+			<li class="nav-item">
+				<a class="nav-link" data-toggle="tab" href="" data-target="#recoverOrder"
+				   ng-click="ctrl.isClickOrderRecovery = ctrl.isClickOrderRecovery ? false : true;">recover order</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" data-toggle="tab" href="" data-target="#config">config</a>
+			</li>
+		</ul>
+		<div class="tab-content">
+			<div id="recoverOrder" class="container tab-pane {{ctrl.isClickOrderRecovery ? 'active' : ''}}">
+				<br/>
+				<button type="button" class="btn btn-primary" ng-click="ctrl.getOrderForRecovery();"
+						style="margin-top: 0px;height: 32px;margin-bottom: 20px;">
+					get order in text
+				</button>
+				<button type="button" class="btn btn-primary" ng-click="ctrl.clearOrderForRecovery();"
+						style="margin-top: 0px;height: 32px;margin-bottom: 20px;">
+					clear
+				</button>
+
+				<button type="button" class="btn btn-primary" ng-click="ctrl.doRecovery();"
+						style="margin-top: 0px;height: 32px;margin-bottom: 20px;"
+						ng-disabled="ctrl.isRecoveringOrder">
+					recover
+				</button>
+
+				<alert type="success" close="ctrl.closeAlert()" ng-if="ctrl.isRecoveringOrder"
+					   dismiss-on-timeout="2000" style="margin-top: 30px;margin-bottom: 0px;" >
+					thành công
+				</alert>
+
+				<textarea rows="30"  placeholder="for recovery" class="checkout__input__add"
+						  ng-model="ctrl.orderListText" style="width: 100%;padding-left: 6px;border: 1px solid #e1e1e1;" ></textarea>
+
+			</div>
+
+			<div id="config" class="container tab-pane">
+				<br/>
+				<button type="button" class="btn btn-primary" ng-click="ctrl.isLuckyDrawMode = ctrl.isLuckyDrawMode ? false : true;"
+						style="margin-top: 0px;height: 32px;margin-bottom: 20px;">
+					lucky draw
+				</button>
+				<button type="button" class="btn btn-primary" ng-click="ctrl.clearOrderForRecovery();"
+						style="margin-top: 0px;height: 32px;margin-bottom: 20px;">
+					test
+				</button>
+
+				<button type="button" class="btn btn-primary" ng-click="ctrl.doRecovery();"
+						style="margin-top: 0px;height: 32px;margin-bottom: 20px;"
+						ng-disabled="ctrl.isRecoveringOrder">
+					test
+				</button>
+
+				<alert type="success" close="ctrl.closeAlert()" ng-if="ctrl.isRecoveringOrder"
+					   dismiss-on-timeout="2000" style="margin-top: 30px;margin-bottom: 0px;" >
+					thành công
+				</alert>
+
+			</div>
+
+		</div>
+
+	</div>
+
+</section>
+
+<section id="cart_items" ng-show="ctrl.theOrder">
+		<div class="container">
+			<div class="row" >
+				<div class="col-sm-3">
+					<select  ng-model="ctrl.theOrder.status"  ng-change="ctrl.updateOrderStatus(ctrl.theOrder)"
+							 ng-options="opt.value as opt.name for opt in ctrl.OrderStatusArray"
+							 style="height: 40px;">
+				    </select> 
+				</div>
+				<div class="col-sm-3">
+					<div class="alert alert-success" role="alert" ng-show="ctrl.responseStr" 
+						 style="margin-top:10px;margin-left: 30px;margin-right: 20px;">
+					  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+					  <span class="sr-only"></span>
+						 Cập nhật thành công
+					</div>
+				</div>
+			</div>
+			
+			
+			<div class="table-responsive cart_info">
+				<table class="table table-condensed">
+					<thead>
+						<tr class="cart_menu">
+							<td class="image">Order : {{ctrl.theOrder.id +" | "+ ctrl.theOrder.statusName}}</td>
+							<td class="description" style="text-align: left;padding-left: 40px;"> name </td>
+							<td class="price" style="text-align: right;padding-right: 80px;">Price</td>
+							<td class="quantity" style="text-align: left;">Quantity</td>
+							<td class="total" style="text-align: right;">Total</td>
+							<td></td>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in ctrl.theOrder.orderDetails ">
+							<td class="cart_product">
+								<a href="#/productDetail/{{item.product.id}}">
+									<img ng-src="img/product/{{item.product.thumbnail}}" style="margin-right: 20px;width: 110px;" alt="">
+								</a>
+							</td>
+							<td class="cart_description" style="text-align: left;padding-left: 40px;">
+								<h4><a href="#/productDetail/{{item.product.id}}">{{item.product.name}}</a></h4>
+								<p>Prod ID: {{item.product.id}}</p>
+
+							</td>
+							<td class="cart_price" style="text-align: right; padding-right: 80px;">
+								<p>{{item.framePriceAtThatTime*(100 - item.frameDiscountAtThatTime)/100 | number:0}} đ</p>
+								<p ng-show="item.frameDiscountAtThatTime != 0"><s style="color: #0d0d0d6e;">{{item.framePriceAtThatTime | number:0}} đ</s></p>
+							</td>
+							<td class="cart_quantity" style="text-align: center;">
+								<p>{{item.quantity}}</p>
+							</td>
+							<td class="cart_total" style="text-align: right;">
+								<p class="cart_total_price">{{item.framePriceAtThatTime*(100 - item.frameDiscountAtThatTime)/100 * item.quantity  | number:0}} đ</p>
+							</td>
+							<td class="cart_delete">
+							</td>
+						</tr>
+						<tr style="border-bottom: 0px;">
+							<td colspan="2" style="padding-left: 30px;vertical-align: baseline;padding-top: 62px;">
+								<h6 class="checkout__title">Shipping Details</h6>
+
+								<div class="row">
+									<div class="col-lg-6">
+										<div class="checkout__input">
+											<p>Full Name<span>*</span></p>
+											<input type="text"  ng-model="ctrl.theOrder.shippingName">
+										</div>
+									</div>
+									<div class="col-lg-6	">
+										<div class="checkout__input">
+											<p>Phone<span>*</span></p>
+											<input type="text" ng-model="ctrl.theOrder.shippingPhone">
+										</div>
+									</div>
+								</div>
+								<div class="checkout__input" style="margin-bottom: 50px;">
+									<p>Address<span>*</span></p>
+									<input type="text" placeholder="Điền địa chỉ chính xác để nhận hàng nhanh chóng.&#10;Và ghi chú cần thiết khi giao hàng." class="checkout__input__add"
+										   ng-model="ctrl.theOrder.shippingAddress">
+
+								</div>
+
+							</td>
+							<td colspan="1" style="padding-top: 23px;">
+							</td>
+							<td colspan="3">
+								<h6 class="checkout__title">Order total</h6>
+								<div class="cart__total">
+									<ul>
+										<li>Subtotal <span>{{ctrl.theOrder.subTotal | number:0}}đ</span></li>
+										<li>Coupon <span>({{ctrl.theOrder.couponDiscount}}%){{ctrl.theOrder.couponAmount | number:0}}đ</span></li>
+										<li>Total <span>{{ctrl.theOrder.total | number:0}}đ</span></li>
+									</ul>
+								</div>
+							</td>
+						</tr>
+						
+					</tbody>
+				</table>
+				<a ng-click="ctrl.deleteOrder(ctrl.theOrder)" href="" class="btn btn-default check_out" style="margin: 0px 0px 30px 30px;">delete</a>
+			</div>
+		</div>
+</section>

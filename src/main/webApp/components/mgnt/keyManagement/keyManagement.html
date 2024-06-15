@@ -1,0 +1,129 @@
+<style>
+
+.thumb {
+    width: 100px;
+    height: 100px;
+    float: none;
+    position: relative;
+    top: 7px;
+    margin-bottom: 20px;
+}
+
+.bt {
+  background: #FE980F;
+  border: medium none;
+  border-radius: 0;
+  margin-left: -5px;
+  margin-top: -3px;
+  padding: 7px 17px;
+}
+</style>
+<link href="css/main2.css" rel="stylesheet">
+<section style="margin-top: 30px;">
+	<div class="container" ng-cloak>
+		<h3>Key Management:</h3>
+		<br>
+		<div class="row" style="margin-bottom: 30px;">
+			<div class="col-md-1">
+				<input type="number"  ng-model="ctrl.theOne.id" disabled="disabled" placeholder="id" style="width:60px;"/>
+			</div>
+			<div class="col-md-1">
+				<input type="text"  ng-model="ctrl.theOne.name" placeholder="name" style="width: 100%;"/>
+			</div>
+			<div class="col-md-1">
+				<input type="text"  ng-model="ctrl.theOne.keyPurpose" placeholder="purpose" style="width: 100%;"/>
+			</div>
+			<div class="col-md-1">
+				<input type="text"  ng-model="ctrl.theOne.timeout" placeholder="expiry" style="width: 100%;"/>
+			</div>
+			<div class="col-md-2">
+				<input type="text"  ng-model="ctrl.theOne.roles" placeholder="roles" style="width: 100%;" disabled="disabled"/>
+			</div>
+			<div class="col-md-2">
+				<input type="text"  ng-model="ctrl.theOne.secretKey" placeholder="secretKey" style="width: 100%;" disabled="disabled"/>
+			</div>
+			<div class="col-sm-1" style="margin-top: 5px;">
+				Active:
+				<input type="checkbox"  ng-model="ctrl.theOne.isActivate" />
+			</div>
+
+			<div class="col-md-2">
+				<a ng-click="ctrl.upsert(ctrl.theOne)" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;">Save</a>
+				<a ng-click="ctrl.clear()" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;">clear</a>
+			</div>
+			<div class="col-md-1">
+				<div class="alert alert-success" role="alert" ng-show="ctrl.responseStr"
+					 style="margin: 0px 0px 0px 0px;width: 120px;height: 0px;padding: 5px 0px 25px 10px;">
+					<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+					<span class="sr-only"></span>
+					thành công
+				</div>
+				<div class="alert alert-danger" role="alert" ng-show="ctrl.responseStrFail"
+					 style="margin: 0px 0px 0px 0px;width: 120px;height: 0px;padding: 5px 0px 25px 10px;">
+					<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+					<span class="sr-only"></span>
+					thất bại
+				</div>
+			</div>
+		</div>
+		<div class="row" style="margin-bottom: 30px;">
+			<div class="col-sm-8">
+				<textarea name="content" placeholder="token" rows="5"  style="white-space: pre-line;"
+						  ng-model="ctrl.theOne.token" maxlength="160" ng-cloak ></textarea>
+			</div>
+		</div>
+
+		<!--data table-->
+		<div class="table-responsive">
+			<table ng-table="ctrl.tableParams" class="table table-bordered table-hover table-striped" show-filter="true">
+				<tr ng-repeat="one in $data">
+					<td title="'id'" filter="{ 'id': 'number'}" sortable="'id'" style="width:80px;text-align: center;">
+						<a href="" ng-click="ctrl.setTheOne(one)">{{one.id}}</a>
+					</td>
+					<td title="'name'" filter="{ 'name': 'text'}" sortable="'name'"  style="width:100px;">
+						{{one.name}}
+					</td>
+				<!--	<td title="'token'" filter="{ 'token': 'text'}" sortable="'token'" style="width:100px;" >
+						{{one.token}}
+					</td>-->
+					<td title="'type'" filter="{ 'keyPurpose': 'text'}" sortable="'keyPurpose'"  style="width:100px;">
+						{{one.keyPurpose}}
+					</td>
+					<td title="'expiry'" filter="{ 'timeout': 'text'}"  style="width:100px;">
+						{{one.timeout | number}}day
+					</td>
+					<td title="'Create date'" filter="{ 'gmtCreate' : 'text'}" sortable="'gmtCreate'" style="width:130px;">
+						{{one.gmtCreate | date:"yyyy-MM-dd hh:mm:ss"}}
+					</td>
+					<td title="'Active'" filter="{ 'isActivate': 'text'}" sortable="'isActivate'"  style="width:90px;">
+						{{one.isActivate}}
+					</td>
+					<td title="'newNew'" style="width:70px;" >
+						<a ng-click="ctrl.renewKey(one)" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;">renew</a>
+					</td>
+					<td title="'delete'" style="width:90px;" >
+
+						<a ng-click="ctrl.promptDelete(one.id)" href="" class="btn btn-default check_out" style="margin: 0px 0px 0px 0px;" >delete</a>
+						<p ng-show="ctrl.deletingId == one.id">
+							Are you sure?
+							<a ng-click="ctrl.deleteOne(one)" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">yes</a>
+							<a ng-click="ctrl.resetDelete()" href="" class="btn btn-default check_out" style="margin: 4px 4px 4px 4px;">no</a>
+						</p>
+
+
+
+					</td>
+				</tr>
+			</table>
+		</div>
+
+
+
+
+
+
+
+
+
+	</div>
+</section>
