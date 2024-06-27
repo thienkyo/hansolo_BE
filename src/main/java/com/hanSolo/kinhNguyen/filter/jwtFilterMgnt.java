@@ -30,7 +30,11 @@ public class jwtFilterMgnt extends GenericFilterBean {
                          final ServletResponse res,
                          final FilterChain chain) throws IOException, ServletException {
         final HttpServletRequest request = (HttpServletRequest) req;
-        //final HttpServletResponse response = (HttpServletResponse) res;
+        // allow OPTIONS request for preflight request during CORS check
+        if (request.getMethod().equals("OPTIONS")) {
+            chain.doFilter(req, res);
+            return;
+        }
 
         final String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("sheep ")) {
@@ -51,17 +55,17 @@ public class jwtFilterMgnt extends GenericFilterBean {
                 throw new ServletException("Unauthorized action");
             }
 
-            if(CommonCache.LOGIN_MEMBER_LIST.containsKey(claims.get("sub"))){
-                Member currMem = CommonCache.LOGIN_MEMBER_LIST.getOrDefault(claims.get("sub"),null);
-                Map<String,String> clientInfo = (Map<String, String>) claims.get("clientInfo");
-                if( currMem == null || !currMem.getStatus()){
-                    throw new ServletException("USER_INACTIVE"+", userid:"+ claims.get("sub") +", clientCode:"+clientInfo.get("clientCode"));
+            if (CommonCache.LOGIN_MEMBER_LIST.containsKey(claims.get("sub"))) {
+                Member currMem = CommonCache.LOGIN_MEMBER_LIST.getOrDefault(claims.get("sub"), null);
+                Map<String, String> clientInfo = (Map<String, String>) claims.get("clientInfo");
+                if (currMem == null || !currMem.getStatus()) {
+                    throw new ServletException("USER_INACTIVE" + ", userid:" + claims.get("sub") + ", clientCode:" + clientInfo.get("clientCode"));
                 }
-                if(!CommonCache.CLIENT_LIST.containsKey(clientInfo.get("clientCode"))){
-                    throw new ServletException("CLIENT_INACTIVE"+", userid:"+ claims.get("sub") +", clientCode:"+clientInfo.get("clientCode"));
+                if (!CommonCache.CLIENT_LIST.containsKey(clientInfo.get("clientCode"))) {
+                    throw new ServletException("CLIENT_INACTIVE" + ", userid:" + claims.get("sub") + ", clientCode:" + clientInfo.get("clientCode"));
                 }
-            }else{
-                throw new ServletException("USER_NOT_IN_THE_LIST"+", userid:"+ claims.get("sub") +", clientCode:");
+            } else {
+                throw new ServletException("USER_NOT_IN_THE_LIST" + ", userid:" + claims.get("sub") + ", clientCode:");
             }
 
             request.setAttribute("claims", claims);
