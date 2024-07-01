@@ -17,35 +17,35 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class KinhNguyenApplication {
 
-	@Bean
-	public FilterRegistrationBean jwtFilter() {
-		final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
-		registrationBean.setFilter(new JwtFilter());
-		registrationBean.addUrlPatterns("/authenticated/*");
+    @Bean
+    public FilterRegistrationBean jwtFilter() {
+        final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+        registrationBean.setFilter(new JwtFilter());
+        registrationBean.addUrlPatterns("/authenticated/*");
 
-		return registrationBean;
-	}
+        return registrationBean;
+    }
 
-	@Bean
-	public FilterRegistrationBean jwtFilterMgnt() {
-		final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
-		registrationBean.setFilter(new jwtFilterMgnt());
-		registrationBean.addUrlPatterns("/mgnt/*");
+    @Bean
+    public FilterRegistrationBean jwtFilterMgnt() {
+        final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+        registrationBean.setFilter(new jwtFilterMgnt());
+        registrationBean.addUrlPatterns("/mgnt/*");
 
-		return registrationBean;
-	}
+        return registrationBean;
+    }
 
-	@Bean
-	public FilterRegistrationBean jwtFilterOpticShopMgnt() {
-		final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
-		registrationBean.setFilter(new jwtFilterOpticShopMgnt());
-		registrationBean.addUrlPatterns("/Hmgnt/*");
+    @Bean
+    public FilterRegistrationBean jwtFilterOpticShopMgnt() {
+        final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+        registrationBean.setFilter(new jwtFilterOpticShopMgnt());
+        registrationBean.addUrlPatterns("/Hmgnt/*");
 
-		return registrationBean;
-	}
+        return registrationBean;
+    }
 
-	public static void main(String[] args) {
-		SpringApplication.run(KinhNguyenApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(KinhNguyenApplication.class, args);
+    }
 
 }
